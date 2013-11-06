@@ -142,12 +142,14 @@ class Etsy_Rhythm {
 		}
 	}
 	
+	
+	
 	/**
 	* Performs the shortcode function
 	*
 	* @since 	1.0.0
 	* 
-	* @return	All listing items
+	* @return	array	All listing items
 	*/
 	public function shortcode( $atts ) {
 		
@@ -223,27 +225,47 @@ class Etsy_Rhythm {
 					}
 			}
 		
+		// Close the listings table
 		$html[] = '</tr></table>';
 						  
 		} else {
+			// If Error occured while retrieving listings
 			$this->logError( $listings );
 		}
 	
+		// Return array imploded into single string, delimited by newlines
 		return implode("\n", $html);
-	}
+	} 
 
 	
+	
+	/*
+	* Retrieves listings and caches them into a json file 
+	*
+	* @since	1.0.1
+	*
+	* @param	string		The shop id	
+	* @param	string		The section
+	* @param	string		The number of items to return
+	*/
 	public function getActiveListings( $shop_id, $shop_section, $quantity) {
 		
+		// Let's grab the number of items to return, by default it will return 25
 		$options = Etsy_Rhythm_Admin::getOptions();
-
 		$quantity = $options['quantity'];
 		
+		// I'm also going to grab the cache life setting
+		$cache_life = $options['cache_life'];
+		
+			// Set up the cache file 
 			$etsy_cache_file = dirname( __FILE__ ).'/tmp/'.$shop_id.'-'.$shop_section.'_cache.json';
 			
-			// if no cache file exist
-			if (!file_exists( $etsy_cache_file ) or ( time() - filemtime( $etsy_cache_file ) >= ETSY_SHOP_CACHE_LIFE ) ) {
+			// This will check for an existing file, or if the cache file is older than the user set cache life
+			if (!file_exists( $etsy_cache_file ) or ( time() - filemtime( $etsy_cache_file ) >= $cache_life ) ) {
+				
+				// This is the all important query string
 				$reponse = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
+				
 				if ( !is_wp_error( $reponse ) ) {
 					// if request OK
 					$tmp_file = $etsy_cache_file.rand().'.tmp';
@@ -267,7 +289,7 @@ class Etsy_Rhythm {
 		
 		$options = Etsy_Rhythm_Admin::getOptions();
 		$title_length = $options['title_length'];
-		
+	
 		// Trim Title length based on user preference
 		if ( strlen( $title ) > $title_length ) {
 			$title = substr( $title, 0, $tile_length );
@@ -279,19 +301,19 @@ class Etsy_Rhythm {
 			$state = __( 'Available', 'etsyshoprhythm' );
 			
 			$script_tags =  '
-				<div class="etsy-shop-listing-card" id="' . $listing_id . '" style="text-align: center;">
-					<a title="' . $title . '" href="' . $url . '" target="' . $target . '" class="etsy-shop-listing-thumb">
-						<img alt="' . $title . '" src="' . $url_170x135 . '">          
+				<div class="etsy-item-container" id="' . $listing_id . '">
+					<a title="' . $title . '" href="' . $url . '" target="' . $target . '" class="etsy-item-thumbnail-link">
+						<img alt="' . $title . '" src="' . $url_170x135 . '" class="etsy-item-thumbnail">          
 					</a>
-					<div class="etsy-shop-listing-detail">
-						<p class="etsy-shop-listing-title">
-							<a title="' . $title . '" href="' . $url . '" target="' . $target . '">'.$title.'</a>
-						</p>
-						<p class="etsy-shop-listing-availability">
-							<a title="' . $title . '" href="' . $url . '" target="' . $target . '">'.$state.'</a>
-						</p>
-					</div>
-					<p class="etsy-shop-listing-price">$'.$price.' <span class="etsy-shop-currency-code">'.$currency_code.'</span></p>
+					
+					<p class="etsy-item-title">
+						<a title="' . $title . '" href="' . $url . '" target="' . $target . '">'.$title.'</a>
+					</p>
+					<p class="etsy-item-availability">
+						<a title="' . $title . '" href="' . $url . '" target="' . $target . '">'.$state.'</a>
+					</p>
+					
+					<p class="etsy-item-price">$'.$price.' <span class="etsy-item-currency-code">'.$currency_code.'</span></p>
 				</div>'; 
 				
 			return $script_tags;
