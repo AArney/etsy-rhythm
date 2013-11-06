@@ -285,10 +285,31 @@ class Etsy_Rhythm {
 		return $data;
 	}
 
+
+	/**
+	* Generates each item
+	*
+	* @since 	1.0.1
+	*
+	* @param	string		$listing_id		The id number of the item
+	* @param	string		$title			The title of the item
+	* @param	string		$state			Whether the item is active or inactive
+	* @param	string		$price			The price of the item
+	* @param	string		$currency_code	The currency code of the item
+	* @param	string		$item_quantity	How many of the item is available
+	* @param	string		$url			The url of the item
+	* @param	string		$url_170x135	The thumbnail of the item
+	* @param	string		$target			The target of the link - new window
+	*
+	* @return	string		$data			A string containing the markup for the item
+	*/
 	public function generateItemListing($listing_id, $title, $state, $price, $currency_code, $item_quantity, $url, $url_170x135, $target) {
 		
+		// Grab the title length from the user options
 		$options = Etsy_Rhythm_Admin::getOptions();
 		$title_length = $options['title_length'];
+		
+		// Let's also grab the currency code
 	
 		// Trim Title length based on user preference
 		if ( strlen( $title ) > $title_length ) {
@@ -339,7 +360,7 @@ class Etsy_Rhythm {
 	 *
 	 * @since    1.0.0
 	 *
-	 *@return    Plugin slug variable.
+	 * @return    Plugin slug variable.
 	 */
 	public function get_plugin_slug() {
 		return $this->plugin_slug;
