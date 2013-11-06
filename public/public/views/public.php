@@ -1,16 +1,14 @@
 <?php
 /**
- * Represents the view for the public-facing component of the plugin.
+ * Etsy Rhythm
  *
- * This typically includes any information, if any, that is rendered to the
- * frontend of the theme when the plugin is activated.
- *
- * @package   Plugin_Name
- * @author    Your Name <email@example.com>
+ * @package   Etsy_Rhythm
+ * @author    Aaron Arney <aaron.arney@ocular-rhythm.com>
  * @license   GPL-2.0+
- * @link      http://example.com
- * @copyright 2013 Your Name or Company Name
+ * @link      http://www.ocular-rhythm.com
+ * @copyright 2013 Aaron Arney
  */
+
 ?>
 
 <!-- This file is used to markup the public facing aspect of the plugin. -->

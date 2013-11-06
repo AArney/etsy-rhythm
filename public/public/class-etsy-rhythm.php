@@ -1,25 +1,19 @@
 <?php
 /**
- * Plugin Name.
+ * Etsy Rhythm
  *
- * @package   Plugin_Name
- * @author    Your Name <email@example.com>
+ * @package   Etsy_Rhythm
+ * @author    Aaron Arney <aaron.arney@ocular-rhythm.com>
  * @license   GPL-2.0+
- * @link      http://example.com
- * @copyright 2013 Your Name or Company Name
+ * @link      http://www.ocular-rhythm.com
+ * @copyright 2013 Aaron Arney
  */
 
 /**
- * Plugin class. This class should ideally be used to work with the
- * public-facing side of the WordPress site.
+ * Etsy Rhythm Class
  *
- * If you're interested in introducing administrative or dashboard
- * functionality, then refer to `class-plugin-name-admin.php`
- *
- * TODO: Rename this class to a proper name for your plugin.
- *
- * @package Plugin_Name
- * @author  Your Name <email@example.com>
+ * @package Etsy Rhythm
+ * @author  Aaron Arney <aaron.arney@ocular-rhythm.com>
  */
 class Etsy_Rhythm {
 
@@ -155,8 +149,8 @@ class Etsy_Rhythm {
 		
 		// Extract the attributes
 		extract( shortcode_atts( array(
-			'shop_id'		=>	'101010',
-			'shop_section'	=>	'0',
+			'shop_id'		=>	'',
+			'shop_section'	=>	'',
 			'quantity'		=>	'25' ), 
 			$atts ) );
 			
@@ -269,6 +263,7 @@ class Etsy_Rhythm {
 		
 		// I'm also going to grab the cache life setting
 		$cache_life = $options['cache_life'];
+		
 		
 			// Set up the cache file 
 			$etsy_cache_file = dirname( __FILE__ ).'/tmp/'.$shop_id.'-'.$shop_section.'_cache.json';

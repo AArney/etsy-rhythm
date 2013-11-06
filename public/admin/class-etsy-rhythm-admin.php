@@ -1,25 +1,19 @@
 <?php
 /**
- * Plugin Name.
+ * Etsy Rhythm
  *
- * @package   Plugin_Name_Admin
- * @author    Your Name <email@example.com>
+ * @package   Etsy_Rhythm
+ * @author    Aaron Arney <aaron.arney@ocular-rhythm.com>
  * @license   GPL-2.0+
- * @link      http://example.com
- * @copyright 2013 Your Name or Company Name
+ * @link      http://www.ocular-rhythm.com
+ * @copyright 2013 Aaron Arney
  */
 
 /**
- * Plugin class. This class should ideally be used to work with the
- * administrative side of the WordPress site.
+ * Etsy Rhythm Admin Class
  *
- * If you're interested in introducing public-facing
- * functionality, then refer to `class-plugin-name.php`
- *
- * TODO: Rename this class to a proper name for your plugin.
- *
- * @package Plugin_Name_Admin
- * @author  Your Name <email@example.com>
+ * @package Etsy Rhythm
+ * @author  Aaron Arney <aaron.arney@ocular-rhythm.com>
  */
 class Etsy_Rhythm_Admin {
 
