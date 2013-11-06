@@ -99,13 +99,6 @@ class Etsy_Rhythm_Admin {
 	}
 
 	
-	/**
-	* Method to retrieve settings from outside the admin class
-	*
-	* @since 	1.0.0
-	*
-	* @return	array		$options		The array containing our settings
-	*/
 	public static function getOptions() {
 		$options = get_option( 'etsy_rhythm_settings' );
 		return $options;
@@ -140,8 +133,6 @@ class Etsy_Rhythm_Admin {
 		return self::$instance;
 	}
 
-
-
 	/**
 	 * Register and enqueue admin-specific style sheet.
 	 *
@@ -161,8 +152,6 @@ class Etsy_Rhythm_Admin {
 		}
 
 	}
-
-
 
 	/**
 	 * Register and enqueue admin-specific JavaScript.
@@ -184,8 +173,6 @@ class Etsy_Rhythm_Admin {
 
 	}
 
-
-
 	/**
 	 * Register the administration menu for this plugin into the WordPress Dashboard menu.
 	 *
@@ -194,7 +181,7 @@ class Etsy_Rhythm_Admin {
 	public function add_plugin_admin_menu() {
 		$this->plugin_screen_hook_suffix = add_options_page(
 			__( 'Etsy Rhythm Options', $this->plugin_slug ),
-			__( 'Etsy Rhythm Settings', $this->plugin_slug ),
+			__( 'Settings', $this->plugin_slug ),
 			'manage_options',
 			$this->plugin_slug,
 			array( $this, 'render_form' )
@@ -202,7 +189,6 @@ class Etsy_Rhythm_Admin {
 
 	}
 
-	
 	
 	/**
 	 * Add settings action link to the plugins page.
@@ -220,8 +206,6 @@ class Etsy_Rhythm_Admin {
 
 	}
 
-
-
 	
 	/**
 	* Render the options page
@@ -231,8 +215,6 @@ class Etsy_Rhythm_Admin {
 	public function render_form() {
 		include_once( 'views/admin.php' );
 	}
-
-
 
 
 	/**
@@ -257,9 +239,6 @@ class Etsy_Rhythm_Admin {
 		$input['who_made'] 		= 	wp_filter_nohtml_kses( $input['who_made'] );
 		$input['when_made'] 	= 	wp_filter_nohtml_kses( $input['when_made'] );
 		$input['image_size'] 	= 	wp_filter_nohtml_kses( $input['image_size'] );
-		
-		Etsy_Rhythm::delete_temp_files();
-		
 		return $input;
 	}
 

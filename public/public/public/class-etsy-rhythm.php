@@ -1,25 +1,19 @@
 <?php
 /**
- * Plugin Name.
+ * Etsy Rhythm
  *
- * @package   Plugin_Name
- * @author    Your Name <email@example.com>
+ * @package   Etsy_Rhythm
+ * @author    Aaron Arney <aaron.arney@ocular-rhythm.com>
  * @license   GPL-2.0+
- * @link      http://example.com
- * @copyright 2013 Your Name or Company Name
+ * @link      http://www.ocular-rhythm.com
+ * @copyright 2013 Aaron Arney
  */
 
 /**
- * Plugin class. This class should ideally be used to work with the
- * public-facing side of the WordPress site.
+ * Etsy Rhythm Class
  *
- * If you're interested in introducing administrative or dashboard
- * functionality, then refer to `class-plugin-name-admin.php`
- *
- * TODO: Rename this class to a proper name for your plugin.
- *
- * @package Plugin_Name
- * @author  Your Name <email@example.com>
+ * @package Etsy Rhythm
+ * @author  Aaron Arney <aaron.arney@ocular-rhythm.com>
  */
 class Etsy_Rhythm {
 
@@ -155,8 +149,8 @@ class Etsy_Rhythm {
 		
 		// Extract the attributes
 		extract( shortcode_atts( array(
-			'shop_id'		=>	'101010',
-			'shop_section'	=>	'0',
+			'shop_id'		=>	'',
+			'shop_section'	=>	'',
 			'quantity'		=>	'25' ), 
 			$atts ) );
 			
@@ -202,12 +196,25 @@ class Etsy_Rhythm {
 				
 			// Going to grab the specified number of items per row via the settings page
 			$options = Etsy_Rhythm_Admin::getOptions();
-			$userRows = $options['userRows'];
+			$user_rows = $options['user_rows'];
 							
 			// Loop through each listing and send results through the itemListing function
 			foreach ( $listings->results as $result ) {
 
-				$item_html = $this->generateItemListing( $result->listing_id, $result->title,  $result->state, $result->price, $result->currency_code, $result->quantity, $result->url, $result->Images[0]->url_170x135, $target );
+				$item_html = $this->generateItemListing( $result->listing_id, 
+															$result->title, 			/* Title of Item */
+															$result->description, 		/* Description of item */
+															$result->state, 			/* Active or sold */
+															$result->price, 			/* Price of item */
+															$result->currency_code, 	/* Currency Code - USD */
+															$result->quantity, 			/* Quantity of item in stock */
+															$result->materials,			/* Materials used for item */
+															$result->url, 				/* Url to the item */
+															$result->who_made,			/* Who made the item */
+															$result->when_made,			/* When the item was made */
+															$result->Images[0]->url_170x135, /* Image of item */
+															$target 					/* Target blank or self */			
+														);
 
 					// A just in case measure to ensure we don't create blank tables		
 					if ( $item_html !== false ) {
@@ -218,7 +225,7 @@ class Etsy_Rhythm {
                    		$itemCount++;
 						
 						// Check against user requested row count and if so create a new row
-						if ( $itemCount == $userRows ) {
+						if ( $itemCount == $user_rows ) {
 							$html[] = '</tr><tr>';
 							$itemCount = 1;
 						}
@@ -257,6 +264,7 @@ class Etsy_Rhythm {
 		// I'm also going to grab the cache life setting
 		$cache_life = $options['cache_life'];
 		
+		
 			// Set up the cache file 
 			$etsy_cache_file = dirname( __FILE__ ).'/tmp/'.$shop_id.'-'.$shop_section.'_cache.json';
 			
@@ -293,17 +301,21 @@ class Etsy_Rhythm {
 	*
 	* @param	string		$listing_id		The id number of the item
 	* @param	string		$title			The title of the item
+	* @param	string		$description	A description of the item
 	* @param	string		$state			Whether the item is active or inactive
 	* @param	string		$price			The price of the item
 	* @param	string		$currency_code	The currency code of the item
 	* @param	string		$item_quantity	How many of the item is available
+	* @param	string		$materials		The materials used to create the item
 	* @param	string		$url			The url of the item
-	* @param	string		$url_170x135	The thumbnail of the item
+	* @param	string		$who_made		Who created the item
+	* @param	string		$when_made		When the item was made
+	* @param	string		$url_170x135	The thumbnail of the 
 	* @param	string		$target			The target of the link - new window
 	*
 	* @return	string		$data			A string containing the markup for the item
 	*/
-	public function generateItemListing($listing_id, $title, $state, $price, $currency_code, $item_quantity, $url, $url_170x135, $target) {
+	public function generateItemListing($listing_id, $title, $description, $state, $price, $currency_code, $item_quantity, $materials, $url, $who_made, $when_made, $url_170x135, $target) {
 		
 		// Grab the title length from the user options
 		$options = Etsy_Rhythm_Admin::getOptions();
@@ -334,8 +346,39 @@ class Etsy_Rhythm {
 						<a title="' . $title . '" href="' . $url . '" target="' . $target . '">'.$state.'</a>
 					</p>
 					
-					<p class="etsy-item-price">$'.$price.' <span class="etsy-item-currency-code">'.$currency_code.'</span></p>
-				</div>'; 
+					<p class="etsy-item-price">$'.$price.' <span class="etsy-item-currency-code">'.$currency_code.'</span></p>'; 
+				
+			// Let's check to see if the user wants to include materials
+			if ( $options['materials'] ) {
+				if ( $materials !== '' ) {
+					$materials = implode(",", $materials);
+					$script_tags .= '<p class="etsy-materials">'.$materials.'</p>';
+				} else {
+					$script_tags .= '<p class="etsy-materials">No materials mentioned</p>';
+				}
+			}
+			
+			// Now check for who made and when made
+			if ( $options['who_made'] ) {
+				if ( $who_made !== '' ) {
+					if ( $who_made === 'i_did' ) {
+						$who_made = "I did.";
+					}
+					$script_tags .= '<p class="etsy-who-made">'.$who_made.'</p>';
+				} else {
+					$script_tags .= '<p class="etsy-who-made">No creator specified</p>';
+				}
+			}
+
+			if ( $options['when_made'] ) {
+				if ( $when_made !== '' ) {
+					$script_tags .= '<p class="etsy-when-made">'.$when_made.'</p>';
+				} else {
+					$script_tags .= '<p class="etsy-when-made">No date specified</p>';
+				}
+			}
+			
+			$script_tags .= '</div>';
 				
 			return $script_tags;
 		} else {

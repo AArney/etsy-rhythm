@@ -24,7 +24,7 @@ class Etsy_Rhythm {
 	 *
 	 * @var     string
 	 */
-	const VERSION = '1.0.0';
+	const VERSION = '1.0.3';
 
 	/**
 	 * TODO - Rename "plugin-name" to the name your your plugin
@@ -93,7 +93,7 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @return 	Response
+	* @return 	$data		Request body
 	*/
 	private function testAPIKey() {
 		$response = $this->api_request( 'listings/active', '&limit=1&offset=0', 1 );
@@ -108,10 +108,12 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @param string 
-	* @param string				
+	* @param 	string		$etsy_request	The command being sent to etsy  
+	* @param 	string		$args			Special parameters for etsy such as show images and limiting items
+	*
+	* @return	string		$request		Returns the request body
 	*/
-	private function api_request( $etsy_request, $args = NULL, $noDebug = NULL ) {
+	private function api_request( $etsy_request, $args = NULL ) {
 	
 		// Use the static method getOptions to import user settings
 		$options = Etsy_Rhythm_Admin::getOptions();
@@ -166,9 +168,9 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @param	string		The shop id to be parsed
-	* @param	string		The shop section 
-	* @param	string		The number of items to return
+	* @param	string		$shop_id		The shop id to be parsed
+	* @param	string		$shop_section	The shop section 
+	* @param	string		$quantity		The number of items to return
 	*
 	* @return	string		Imploded array containing the markup
 	*/
@@ -251,9 +253,9 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @param	string		The shop id	
-	* @param	string		The section
-	* @param	string		The number of items to return
+	* @param	string		$shop_id		The shop id	
+	* @param	string		$shop_section	The section
+	* @param	string		$quantity		The number of items to return
 	*/
 	public function getActiveListings( $shop_id, $shop_section, $quantity) {
 		
@@ -272,23 +274,23 @@ class Etsy_Rhythm {
 			if (!file_exists( $etsy_cache_file ) or ( time() - filemtime( $etsy_cache_file ) >= $cache_life ) ) {
 				
 				// This is the all important query string
-				$reponse = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
+				$response = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
 				
-				if ( !is_wp_error( $reponse ) ) {
+				if ( !is_wp_error( $response ) ) {
 					// if request OK
 					$tmp_file = $etsy_cache_file.rand().'.tmp';
-					file_put_contents( $tmp_file, $reponse );
+					file_put_contents( $tmp_file, $response );
 					rename( $tmp_file, $etsy_cache_file );
 				} else {
 					// return WP_Error
-					return $reponse;
+					return $response;
 				}
 			} else {
 				// read cache file
-				$reponse = file_get_contents( $etsy_cache_file );
+				$response = file_get_contents( $etsy_cache_file );
 			}
 			
-			$data = json_decode( $reponse );	
+			$data = json_decode( $response );	
 		
 		return $data;
 	}
@@ -385,17 +387,30 @@ class Etsy_Rhythm {
 			return false;
 		}
 	}
+	
+	
+	/**
+	* Get the shop section
+	*
+	* @since	1.0.1
+	*
+	* @param 	string		$shiop_id		The shops id
+	* @param	string		$shop_section	The section id
+	*
+	* @return	string		$data			Returns the request body
+	*/
 	public function getShopSection( $shop_id, $shop_section) {
-		$reponse = $this->api_request( "shops/$shop_id/sections/$shop_section", NULL , 1 );
-		if ( !is_wp_error( $reponse ) ) {
-			$data = json_decode( $reponse );
+		$response = $this->api_request( "shops/$shop_id/sections/$shop_section", NULL , 1 );
+		if ( !is_wp_error( $response ) ) {
+			$data = json_decode( $response );
 		} else {
 			// return WP_Error
-			return $reponse;
+			return $response;
 		}
 		
 		return $data;
 	}
+	
 	
 	
 	/**
@@ -408,6 +423,9 @@ class Etsy_Rhythm {
 	public function get_plugin_slug() {
 		return $this->plugin_slug;
 	}
+
+
+
 
 	/**
 	 * Return an instance of this class.
@@ -425,6 +443,8 @@ class Etsy_Rhythm {
 
 		return self::$instance;
 	}
+
+
 
 	/**
 	 * Fired when the plugin is activated.
@@ -594,7 +614,42 @@ class Etsy_Rhythm {
 		wp_enqueue_script( $this->plugin_slug . '-plugin-script', plugins_url( 'assets/js/public.js', __FILE__ ), array( 'jquery' ), self::VERSION );
 	}
 
-
+	
+	/**
+	* Deletes all files in the temp directory
+	*
+	* @since 	1.0.3
+	*/
+	public static function delete_temp_files() {
+		try {
+			// Gather all files in temp directory
+			$etsy_cache_files = glob( dirname( __FILE__ ).'/tmp/*');
+		
+			foreach( $etsy_cache_files as $file ) {
+				if( is_file( $file ) ) {
+					unlink( $file );
+				}
+			}
+		} catch (Exception $e ) {
+			// No files to be deleted
+		}
+	}
+	
+	
+	
+	/**
+	* Retrieves all files in the temp directory
+	*
+	* @since 	1.0.3
+	*
+	* @return	array	$files		All files in the temp directory
+	*/
+	public static function get_temp_files() {
+		$files = dirname( __FILE__ ).'/tmp/*.json';
+		return $files;
+	}
+	
+	
 	/**
 	* Append error to a logfile 
 	*
