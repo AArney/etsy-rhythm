@@ -3,11 +3,11 @@
 	<!-- Display Plugin Icon, Header, and Description -->
 	<div class="icon32" id="icon-options-general"><br>
 	</div>
-	<h2>Etsy Rhythm Options</h2>
+	<h2><?php _e('Etsy Rhythm Options', 'etsyrhythm');?></h2>
 	
 	
 	<!-- Beginning of the Plugin Options Form -->
-	<form method="post" action="options.php">
+	<form id="etsy-rhythm-form" method="post" action="options.php">
 		<?php settings_fields('etsy_rhythm_plugin_options'); ?>
 		<?php $options = get_option('etsy_rhythm_settings'); ?>
 		<table class="form-table">
@@ -23,11 +23,13 @@
 					<?php _e('Etsy API Key', 'etsyrhythm'); ?>
 				</th>
 				<td><input id="etsy_rhythm_settings[api_key]" name="etsy_rhythm_settings[api_key]" type="text" size="25" value="<?php echo $options['api_key']; ?>" class="regular-text code" />
-					<?php /*if ( !is_wp_error( EtsyAPI::testAPIKey()) ) { */?>
-					<span id="etsy_shop_api_key_status" class="green" >Your API Key is valid</span>
-					<?php /*} elseif ( $options['api_key']  ) {*/ ?>
-					<span id="etsy_shop_api_key_status" class="red">You API Key is invalid</span>
-					<?php /* } */ ?>
+					
+					<?php $test = Etsy_Rhythm::testApiKey();
+					if ( $test ) { ;?>
+						<span id="etsy_shop_api_key_status" class="green" >Your API Key is valid</span>
+					<?php } else { ;?>
+						<span id="etsy_shop_api_key_status" class="red">You API Key is invalid</span>
+					<?php };?>
 					<p class="description"> <?php echo sprintf( __('You may get an Etsy API Key by <a href="%1$s">Creating a new Etsy App</a>', 'etsyrhythm' ), 'http://www.etsy.com/developers/register' ); ?> </p></td>
 			</tr>
 			<?php 		/* 
@@ -81,7 +83,7 @@
 					<?php _e('Number of items to list', 'etsyrhythm'); ?>
 				</th>
 				<td><input id="etsy_rhythm_settings[display_quantity]" name="etsy_rhythm_settings[display_quantity]" type="text" size="25" value="<?php echo $options['display_quantity']; ?>" class="regular-text code" />
-					<p class="description"> <?php echo __( 'How many items to list ( 1 - 500 )', 'etsyrhythm' ); ?> </p></td>
+					<p class="description"> <?php echo __( 'How many items to list ( Max 100 per page )', 'etsyrhythm' ); ?> </p></td>
 			</tr>
 			<?php 		/* 
 						*	Title Trimming

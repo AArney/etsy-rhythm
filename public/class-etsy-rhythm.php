@@ -93,10 +93,10 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @return 	$data		Request body
+	* @return 	string			$data		Request body
 	*/
-	private function testAPIKey() {
-		$response = $this->api_request( 'listings/active', '&limit=1&offset=0', 1 );
+	public function testAPIKey() {
+		$response = self::api_request( 'listings/active', '&limit=1&offset=0', 1 );
 		$data = json_decode( $response );
 		return $data;
 	}
@@ -113,7 +113,7 @@ class Etsy_Rhythm {
 	*
 	* @return	string		$request		Returns the request body
 	*/
-	private function api_request( $etsy_request, $args = NULL ) {
+	public function api_request( $etsy_request, $args = NULL ) {
 	
 		// Use the static method getOptions to import user settings
 		$options = Etsy_Rhythm_Admin::getOptions();
@@ -145,7 +145,7 @@ class Etsy_Rhythm {
 	*
 	* @since 	1.0.0
 	* 
-	* @return	array	All listing items
+	* @return	array		$atts 			All listing items
 	*/
 	public function shortcode( $atts ) {
 		
@@ -157,7 +157,7 @@ class Etsy_Rhythm {
 			$atts ) );
 			
 		// Pass the attributes to the postListing function and render the items
-		return $this->postListings( $shop_id, $shop_section, $quantity );
+		return self::postListings( $shop_id, $shop_section, $quantity );
 	}
 	
 	
@@ -177,7 +177,7 @@ class Etsy_Rhythm {
 	public function postListings( $shop_id, $shop_section, $quantity) {    
 		
 		// Grab listings with shortcode atts as arguments	
-		$listings = $this->getActiveListings( $shop_id, $shop_section, $quantity );
+		$listings = self::getActiveListings( $shop_id, $shop_section, $quantity );
 
 		// If grabbing listings was successful
 		if ( !is_wp_error( $listings ) ) {
@@ -203,7 +203,7 @@ class Etsy_Rhythm {
 			// Loop through each listing and send results through the itemListing function
 			foreach ( $listings->results as $result ) {
 		
-				$item_html = $this->generateItemListing( $result->listing_id, 
+				$item_html = self::generateItemListing( $result->listing_id, 
 															$result->title, 			/* Title of Item */
 															$result->description, 		/* Description of item */
 															$result->state, 			/* Active or sold */
@@ -239,7 +239,7 @@ class Etsy_Rhythm {
 						  
 		} else {
 			// If Error occured while retrieving listings
-			$this->logError( $listings );
+			self::logError( $listings );
 		}
 	
 		// Return array imploded into single string, delimited by newlines
@@ -259,6 +259,9 @@ class Etsy_Rhythm {
 	*/
 	public function getActiveListings( $shop_id, $shop_section, $quantity) {
 		
+		// I am going to call the cycle_temp_files function here for the time being
+		self::cycle_temp_files();
+		
 		// Let's grab the number of items to return, by default it will return 25
 		$options = Etsy_Rhythm_Admin::getOptions();
 		$quantity = $options['display_quantity'];
@@ -275,14 +278,17 @@ class Etsy_Rhythm {
 				
 				
 				// This is the all important query string
+				// If shop section is not supplied in the shortcode, let's just return all active listings in the shop
 				if ( $shop_section === '0' ) {
-					$response = $this->api_request( "shops/$shop_id//listings/active", "&limit=$quantity&includes=Images" );
+					$response = self::api_request( "shops/$shop_id//listings/active", "&limit=$quantity&includes=Images" );
 				} else {
-					$response = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
+					$response = self::api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
 				}
 				
+				
+				// If there was an error in the response, let's return that error to WordPress 
 				if ( !is_wp_error( $response ) ) {
-					// if request OK
+					// If request OK
 					$tmp_file = $etsy_cache_file.rand().'.tmp';
 					file_put_contents( $tmp_file, $response );
 					rename( $tmp_file, $etsy_cache_file );
@@ -359,9 +365,9 @@ class Etsy_Rhythm {
 			if ( $options['materials'] ) {
 				if ( $materials !== '' ) {
 					$materials = implode(",", $materials);
-					$script_tags .= '<p class="etsy-materials">'.$materials.'</p>';
+					$script_tags .= '<p class="etsy-item-materials">'.$materials.'</p>';
 				} else {
-					$script_tags .= '<p class="etsy-materials">No materials mentioned</p>';
+					$script_tags .= '<p class="etsy-item-materials">No materials mentioned</p>';
 				}
 			}
 			
@@ -371,17 +377,17 @@ class Etsy_Rhythm {
 					if ( $who_made === 'i_did' ) {
 						$who_made = "I did.";
 					}
-					$script_tags .= '<p class="etsy-who-made">'.$who_made.'</p>';
+					$script_tags .= '<p class="etsy-item-who-made">'.$who_made.'</p>';
 				} else {
-					$script_tags .= '<p class="etsy-who-made">No creator specified</p>';
+					$script_tags .= '<p class="etsy-item-who-made">No creator specified</p>';
 				}
 			}
 
 			if ( $options['when_made'] ) {
 				if ( $when_made !== '' ) {
-					$script_tags .= '<p class="etsy-when-made">'.$when_made.'</p>';
+					$script_tags .= '<p class="etsy-item-when-made">'.$when_made.'</p>';
 				} else {
-					$script_tags .= '<p class="etsy-when-made">No date specified</p>';
+					$script_tags .= '<p class="etsy-item-when-made">No date specified</p>';
 				}
 			}
 			
@@ -405,7 +411,7 @@ class Etsy_Rhythm {
 	* @return	string		$data			Returns the request body
 	*/
 	public function getShopSection( $shop_id, $shop_section) {
-		$response = $this->api_request( "shops/$shop_id/sections/$shop_section", NULL , 1 );
+		$response = self::api_request( "shops/$shop_id/sections/$shop_section", NULL , 1 );
 		if ( !is_wp_error( $response ) ) {
 			$data = json_decode( $response );
 		} else {
@@ -542,8 +548,9 @@ class Etsy_Rhythm {
 		switch_to_blog( $blog_id );
 		self::single_activate();
 		restore_current_blog();
-
 	}
+	
+	
 
 	/**
 	 * Get all blog ids of blogs in the current network that are:
@@ -568,23 +575,6 @@ class Etsy_Rhythm {
 
 	}
 
-	/**
-	 * Fired for each blog when the plugin is activated.
-	 *
-	 * @since    1.0.0
-	 */
-	private static function single_activate() {
-		// TODO: Define activation functionality here
-	}
-
-	/**
-	 * Fired for each blog when the plugin is deactivated.
-	 *
-	 * @since    1.0.0
-	 */
-	private static function single_deactivate() {
-		// TODO: Define deactivation functionality here
-	}
 
 	/**
 	 * Load the plugin text domain for translation.
@@ -625,7 +615,7 @@ class Etsy_Rhythm {
 	*
 	* @since 	1.0.3
 	*/
-	public static function delete_temp_files() {
+	public function delete_temp_files() {
 		try {
 			// Gather all files in temp directory
 			$etsy_cache_files = glob( dirname( __FILE__ ).'/tmp/*');
@@ -640,6 +630,38 @@ class Etsy_Rhythm {
 		}
 	}
 	
+	
+	
+	/**
+	* This function will cycle through the files in the tmp directory
+	* and delete any file that is older than week.
+	*
+	* Requires PHP 5.3
+	*
+	* @since	1.0.4
+	*/
+	public function cycle_temp_files() {
+		try {
+			// Gather all files in temp directory
+			$etsy_cache_files = glob( dirname( __FILE__ ).'/tmp/*');
+		
+			// For every file in the directory, compare the modified
+			// time to the current time minus one week in seconds.
+			// This will delete any file that has not been modified
+			// within the last week.
+			foreach( $etsy_cache_files as $file ) {
+				if( file_exists( $file ) ) {
+					$fileTime = filemtime( $file );
+					$timeWindow = time() - $fileTime;
+					if ( $timeWindow >= 604800 )  {
+						unlink( $file );
+					}
+				}
+			}
+		} catch (Exception $e ) {
+			// No files to be deleted
+		}
+	}
 	
 	
 	/**

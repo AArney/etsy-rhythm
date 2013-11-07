@@ -35,6 +35,8 @@ class Etsy_Rhythm_Admin {
 	 */
 	protected $plugin_screen_hook_suffix = null;
 
+
+
 	/**
 	 * Initialize the plugin by loading admin scripts & styles and adding a
 	 * settings page and menu.
@@ -106,7 +108,7 @@ class Etsy_Rhythm_Admin {
 	*
 	* @return	array		$options		The array containing our settings
 	*/
-	public static function getOptions() {
+	public function getOptions() {
 		$options = get_option( 'etsy_rhythm_settings' );
 		return $options;
 	}
@@ -128,7 +130,7 @@ class Etsy_Rhythm_Admin {
 	 *
 	 * @since     1.0.0
 	 *
-	 * @return    object    A single instance of this class.
+	 * @return    object    $instance	A single instance of this class.
 	 */
 	public static function get_instance() {
 
@@ -247,7 +249,7 @@ class Etsy_Rhythm_Admin {
 	public function validate_options($input) {
 		$input['api_key'] 				= 	wp_filter_nohtml_kses( trim(preg_replace( '/[^a-z0-9]/', '', $input['api_key'] ) ) );
 		$input['target_blank'] 			= 	wp_filter_nohtml_kses( $input['target_blank'] ); 
-		$input['display_quantity']		= 	wp_filter_nohtml_kses( (empty( $input['display_quantity'] )) ? $input['display_quantity'] = "1" : absint( $input['display_quantity'] ) );
+		$input['display_quantity']		= 	wp_filter_nohtml_kses( ( ( empty( $input['display_quantity'] ) ) || ($input['display_quantity'] > 100 ) ) ? $input['display_quantity'] = "1" : absint( $input['display_quantity'] ) );
 		$input['cache_life'] 			= 	wp_filter_nohtml_kses( (empty( $input['cache_life'] )) ? $input['cache_life'] = "26000" : absint( $input['cache_life'] ) );
 		$input['reset_cache'] 			= 	wp_filter_nohtml_kses( $input['reset_cache'] );
 		$input['title_length'] 			= 	wp_filter_nohtml_kses( (empty( $input['title_length'] )) ? $input['title_length'] = "25" : absint( $input['title_length'] ) );

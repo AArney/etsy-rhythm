@@ -1,1 +1,64 @@
-/* This stylesheet is used to style the public-facing components of the plugin. */
+
+/* Table that holds all the items */
+.etsy-shop-listing-table {
+}
+
+/* Table Row that holds items */
+.etsy-shop-listing tr {
+}
+
+/* Alternate Row style if desired */
+.etsy-shop-listing tr:nth-child(odd) {
+}
+
+/* Table Cell that holds item */
+.etsy-shop-listing {
+}
+
+/* Container that holds the item */
+.etsy-item-container {
+}
+
+/* Thumbnail image that links to the item on etsy */
+.etsy-item-thumbnail-link {
+}
+
+/* Thunbmail image */
+.etsy-item-thumbnail {
+}
+
+/* Item title */
+.etsy-item-title {
+}
+
+/* Item title link */
+.etsy-item-title a {
+}
+
+/* Item title link hover */
+.etsy-item-title a:hover {
+}
+
+/* Item availability */
+.etsy-item-availability {
+}
+
+/* Item Price */
+.etsy-item-price {
+}
+
+/* Currency Code */
+.etsy-item-currency-code {
+}
+
+/* Item Materials used */
+.etsy-item-materials {
+}
+
+/* Item creator */
+.etsy-item-who-made {
+}
+
+/* Item date */
+.etsy-item-when-made {
+}
