@@ -1,25 +1,19 @@
 <?php
 /**
- * Plugin Name.
+ * Etsy Rhythm
  *
- * @package   Plugin_Name
- * @author    Your Name <email@example.com>
+ * @package   Etsy_Rhythm
+ * @author    Aaron Arney <aaron.arney@ocular-rhythm.com>
  * @license   GPL-2.0+
- * @link      http://example.com
- * @copyright 2013 Your Name or Company Name
+ * @link      http://www.ocular-rhythm.com
+ * @copyright 2013 Aaron Arney
  */
 
-/**
- * Plugin class. This class should ideally be used to work with the
- * public-facing side of the WordPress site.
+/** 
+ * Etsy Rhythm Class
  *
- * If you're interested in introducing administrative or dashboard
- * functionality, then refer to `class-plugin-name-admin.php`
- *
- * TODO: Rename this class to a proper name for your plugin.
- *
- * @package Plugin_Name
- * @author  Your Name <email@example.com>
+ * @package Etsy Rhythm
+ * @author  Aaron Arney <aaron.arney@ocular-rhythm.com>
  */
 class Etsy_Rhythm {
 
@@ -30,7 +24,7 @@ class Etsy_Rhythm {
 	 *
 	 * @var     string
 	 */
-	const VERSION = '1.0.0';
+	const VERSION = '1.0.3';
 
 	/**
 	 * TODO - Rename "plugin-name" to the name your your plugin
@@ -99,7 +93,7 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @return 	Response
+	* @return 	$data		Request body
 	*/
 	private function testAPIKey() {
 		$response = $this->api_request( 'listings/active', '&limit=1&offset=0', 1 );
@@ -114,10 +108,12 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @param string 
-	* @param string				
+	* @param 	string		$etsy_request	The command being sent to etsy  
+	* @param 	string		$args			Special parameters for etsy such as show images and limiting items
+	*
+	* @return	string		$request		Returns the request body
 	*/
-	private function api_request( $etsy_request, $args = NULL, $noDebug = NULL ) {
+	private function api_request( $etsy_request, $args = NULL ) {
 	
 		// Use the static method getOptions to import user settings
 		$options = Etsy_Rhythm_Admin::getOptions();
@@ -155,7 +151,7 @@ class Etsy_Rhythm {
 		
 		// Extract the attributes
 		extract( shortcode_atts( array(
-			'shop_id'		=>	'101010',
+			'shop_id'		=>	'0',
 			'shop_section'	=>	'0',
 			'quantity'		=>	'25' ), 
 			$atts ) );
@@ -172,15 +168,15 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @param	string		The shop id to be parsed
-	* @param	string		The shop section 
-	* @param	string		The number of items to return
+	* @param	string		$shop_id		The shop id to be parsed
+	* @param	string		$shop_section	The shop section 
+	* @param	string		$quantity		The number of items to return
 	*
 	* @return	string		Imploded array containing the markup
 	*/
 	public function postListings( $shop_id, $shop_section, $quantity) {    
 		
-		// Grab listings with shortcode atts as arguments
+		// Grab listings with shortcode atts as arguments	
 		$listings = $this->getActiveListings( $shop_id, $shop_section, $quantity );
 
 		// If grabbing listings was successful
@@ -199,15 +195,28 @@ class Etsy_Rhythm {
 				$target = '_self';
 			}
 								
-				
+			
 			// Going to grab the specified number of items per row via the settings page
 			$options = Etsy_Rhythm_Admin::getOptions();
-			$userRows = $options['userRows'];
+			$user_rows = $options['user_rows'];
 							
 			// Loop through each listing and send results through the itemListing function
 			foreach ( $listings->results as $result ) {
-
-				$item_html = $this->generateItemListing( $result->listing_id, $result->title,  $result->state, $result->price, $result->currency_code, $result->quantity, $result->url, $result->Images[0]->url_170x135, $target );
+		
+				$item_html = $this->generateItemListing( $result->listing_id, 
+															$result->title, 			/* Title of Item */
+															$result->description, 		/* Description of item */
+															$result->state, 			/* Active or sold */
+															$result->price, 			/* Price of item */
+															$result->currency_code, 	/* Currency Code - USD */
+															$result->quantity, 			/* Quantity of item in stock */
+															$result->materials,			/* Materials used for item */
+															$result->url, 				/* Url to the item */
+															$result->who_made,			/* Who made the item */
+															$result->when_made,			/* When the item was made */
+															$result->Images[0]->url_170x135, /* Image of item */
+															$target 					/* Target blank or self */			
+														);
 
 					// A just in case measure to ensure we don't create blank tables		
 					if ( $item_html !== false ) {
@@ -218,7 +227,7 @@ class Etsy_Rhythm {
                    		$itemCount++;
 						
 						// Check against user requested row count and if so create a new row
-						if ( $itemCount == $userRows ) {
+						if ( $itemCount == $user_rows ) {
 							$html[] = '</tr><tr>';
 							$itemCount = 1;
 						}
@@ -244,18 +253,19 @@ class Etsy_Rhythm {
 	*
 	* @since	1.0.1
 	*
-	* @param	string		The shop id	
-	* @param	string		The section
-	* @param	string		The number of items to return
+	* @param	string		$shop_id		The shop id	
+	* @param	string		$shop_section	The section
+	* @param	string		$quantity		The number of items to return
 	*/
 	public function getActiveListings( $shop_id, $shop_section, $quantity) {
 		
 		// Let's grab the number of items to return, by default it will return 25
 		$options = Etsy_Rhythm_Admin::getOptions();
-		$quantity = $options['quantity'];
+		$quantity = $options['display_quantity'];
 		
 		// I'm also going to grab the cache life setting
 		$cache_life = $options['cache_life'];
+		
 		
 			// Set up the cache file 
 			$etsy_cache_file = dirname( __FILE__ ).'/tmp/'.$shop_id.'-'.$shop_section.'_cache.json';
@@ -263,8 +273,13 @@ class Etsy_Rhythm {
 			// This will check for an existing file, or if the cache file is older than the user set cache life
 			if (!file_exists( $etsy_cache_file ) or ( time() - filemtime( $etsy_cache_file ) >= $cache_life ) ) {
 				
+				
 				// This is the all important query string
-				$response = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
+				if ( $shop_section === '0' ) {
+					$response = $this->api_request( "shops/$shop_id//listings/active", "&limit=$quantity&includes=Images" );
+				} else {
+					$response = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
+				}
 				
 				if ( !is_wp_error( $response ) ) {
 					// if request OK
@@ -293,17 +308,21 @@ class Etsy_Rhythm {
 	*
 	* @param	string		$listing_id		The id number of the item
 	* @param	string		$title			The title of the item
+	* @param	string		$description	A description of the item
 	* @param	string		$state			Whether the item is active or inactive
 	* @param	string		$price			The price of the item
 	* @param	string		$currency_code	The currency code of the item
 	* @param	string		$item_quantity	How many of the item is available
+	* @param	string		$materials		The materials used to create the item
 	* @param	string		$url			The url of the item
-	* @param	string		$url_170x135	The thumbnail of the item
+	* @param	string		$who_made		Who created the item
+	* @param	string		$when_made		When the item was made
+	* @param	string		$url_170x135	The thumbnail of the 
 	* @param	string		$target			The target of the link - new window
 	*
 	* @return	string		$data			A string containing the markup for the item
 	*/
-	public function generateItemListing($listing_id, $title, $state, $price, $currency_code, $item_quantity, $url, $url_170x135, $target) {
+	public function generateItemListing($listing_id, $title, $description, $state, $price, $currency_code, $item_quantity, $materials, $url, $who_made, $when_made, $url_170x135, $target) {
 		
 		// Grab the title length from the user options
 		$options = Etsy_Rhythm_Admin::getOptions();
@@ -313,7 +332,7 @@ class Etsy_Rhythm {
 	
 		// Trim Title length based on user preference
 		if ( strlen( $title ) > $title_length ) {
-			$title = substr( $title, 0, $tile_length );
+			$title = substr( $title, 0, $title_length );
 			$title .= "...";
 		}
 		
@@ -334,14 +353,57 @@ class Etsy_Rhythm {
 						<a title="' . $title . '" href="' . $url . '" target="' . $target . '">'.$state.'</a>
 					</p>
 					
-					<p class="etsy-item-price">$'.$price.' <span class="etsy-item-currency-code">'.$currency_code.'</span></p>
-				</div>'; 
+					<p class="etsy-item-price">$'.$price.' <span class="etsy-item-currency-code">'.$currency_code.'</span></p>'; 
+				
+			// Let's check to see if the user wants to include materials
+			if ( $options['materials'] ) {
+				if ( $materials !== '' ) {
+					$materials = implode(",", $materials);
+					$script_tags .= '<p class="etsy-materials">'.$materials.'</p>';
+				} else {
+					$script_tags .= '<p class="etsy-materials">No materials mentioned</p>';
+				}
+			}
+			
+			// Now check for who made and when made
+			if ( $options['who_made'] ) {
+				if ( $who_made !== '' ) {
+					if ( $who_made === 'i_did' ) {
+						$who_made = "I did.";
+					}
+					$script_tags .= '<p class="etsy-who-made">'.$who_made.'</p>';
+				} else {
+					$script_tags .= '<p class="etsy-who-made">No creator specified</p>';
+				}
+			}
+
+			if ( $options['when_made'] ) {
+				if ( $when_made !== '' ) {
+					$script_tags .= '<p class="etsy-when-made">'.$when_made.'</p>';
+				} else {
+					$script_tags .= '<p class="etsy-when-made">No date specified</p>';
+				}
+			}
+			
+			$script_tags .= '</div>';
 				
 			return $script_tags;
 		} else {
 			return false;
 		}
 	}
+	
+	
+	/**
+	* Get the shop section
+	*
+	* @since	1.0.1
+	*
+	* @param 	string		$shiop_id		The shops id
+	* @param	string		$shop_section	The section id
+	*
+	* @return	string		$data			Returns the request body
+	*/
 	public function getShopSection( $shop_id, $shop_section) {
 		$response = $this->api_request( "shops/$shop_id/sections/$shop_section", NULL , 1 );
 		if ( !is_wp_error( $response ) ) {
@@ -355,6 +417,7 @@ class Etsy_Rhythm {
 	}
 	
 	
+	
 	/**
 	 * Return the plugin slug.
 	 *
@@ -365,6 +428,9 @@ class Etsy_Rhythm {
 	public function get_plugin_slug() {
 		return $this->plugin_slug;
 	}
+
+
+
 
 	/**
 	 * Return an instance of this class.
@@ -382,6 +448,8 @@ class Etsy_Rhythm {
 
 		return self::$instance;
 	}
+
+
 
 	/**
 	 * Fired when the plugin is activated.
@@ -551,7 +619,42 @@ class Etsy_Rhythm {
 		wp_enqueue_script( $this->plugin_slug . '-plugin-script', plugins_url( 'assets/js/public.js', __FILE__ ), array( 'jquery' ), self::VERSION );
 	}
 
-
+	
+	/**
+	* Deletes all files in the temp directory
+	*
+	* @since 	1.0.3
+	*/
+	public static function delete_temp_files() {
+		try {
+			// Gather all files in temp directory
+			$etsy_cache_files = glob( dirname( __FILE__ ).'/tmp/*');
+		
+			foreach( $etsy_cache_files as $file ) {
+				if( is_file( $file ) ) {
+					unlink( $file );
+				}
+			}
+		} catch (Exception $e ) {
+			// No files to be deleted
+		}
+	}
+	
+	
+	
+	/**
+	* Retrieves all files in the temp directory
+	*
+	* @since 	1.0.3
+	*
+	* @return	array	$files		All files in the temp directory
+	*/
+	public static function get_temp_files() {
+		$files = dirname( __FILE__ ).'/tmp/*.json';
+		return $files;
+	}
+	
+	
 	/**
 	* Append error to a logfile 
 	*
@@ -563,7 +666,7 @@ class Etsy_Rhythm {
 	public static function logError( $error, $logfile='' ) {
 		
 		if ( $logfile == '' ) {
-			if ( defined( DEFAULT_LOG ) == TRUE ) {
+			if ( defined( DEFAULT_LOG ) == true ) {
 				$logfile = DEFAULT_LOG;
 			} else {
 				$logfile = plugins_url('logs/error_log.txt');

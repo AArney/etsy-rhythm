@@ -1,25 +1,19 @@
 <?php
 /**
- * Plugin Name.
+ * Etsy Rhythm
  *
- * @package   Plugin_Name_Admin
- * @author    Your Name <email@example.com>
+ * @package   Etsy_Rhythm
+ * @author    Aaron Arney <aaron.arney@ocular-rhythm.com>
  * @license   GPL-2.0+
- * @link      http://example.com
- * @copyright 2013 Your Name or Company Name
+ * @link      http://www.ocular-rhythm.com
+ * @copyright 2013 Aaron Arney
  */
 
 /**
- * Plugin class. This class should ideally be used to work with the
- * administrative side of the WordPress site.
+ * Etsy Rhythm Admin Class
  *
- * If you're interested in introducing public-facing
- * functionality, then refer to `class-plugin-name.php`
- *
- * TODO: Rename this class to a proper name for your plugin.
- *
- * @package Plugin_Name_Admin
- * @author  Your Name <email@example.com>
+ * @package Etsy Rhythm
+ * @author  Aaron Arney <aaron.arney@ocular-rhythm.com>
  */
 class Etsy_Rhythm_Admin {
 
@@ -87,20 +81,31 @@ class Etsy_Rhythm_Admin {
 		if(($tmp['chk_default_options_db']=='1')||(!is_array($tmp))) {
 			delete_option('etsy_rhythm_settings'); 
 			$arr = array(	
-							"api_key"		=>		"000",
-							"target_blank"	=>		true,
-							"quantity"		=>		25,
-							"cache_life"	=>		26000,
-							"reset_cache"	=>		false,
-							"title_length"	=>		25,
-							"language"		=>		"en",
-							"image_size"	=>		"75x75",
+							"api_key"			=>		"000",
+							"target_blank"		=>		true,
+							"display_quantity"	=>		25,
+							"cache_life"		=>		26000,
+							"reset_cache"		=>		false,
+							"title_length"		=>		25,
+							"language"			=>		"en",
+							"user_rows"			=>		4,
+							"materials"			=>		false,
+							"who_made"			=>		false,
+							"when_made"			=>		false,
+							"image_size"		=>		"75x75",
 							);
 			update_option('etsy_rhythm_settings', $arr);
 		}
 	}
 
 	
+	/**
+	* Method to retrieve settings from outside the admin class
+	*
+	* @since 	1.0.0
+	*
+	* @return	array		$options		The array containing our settings
+	*/
 	public static function getOptions() {
 		$options = get_option( 'etsy_rhythm_settings' );
 		return $options;
@@ -135,6 +140,8 @@ class Etsy_Rhythm_Admin {
 		return self::$instance;
 	}
 
+
+
 	/**
 	 * Register and enqueue admin-specific style sheet.
 	 *
@@ -154,6 +161,8 @@ class Etsy_Rhythm_Admin {
 		}
 
 	}
+
+
 
 	/**
 	 * Register and enqueue admin-specific JavaScript.
@@ -175,6 +184,8 @@ class Etsy_Rhythm_Admin {
 
 	}
 
+
+
 	/**
 	 * Register the administration menu for this plugin into the WordPress Dashboard menu.
 	 *
@@ -183,7 +194,7 @@ class Etsy_Rhythm_Admin {
 	public function add_plugin_admin_menu() {
 		$this->plugin_screen_hook_suffix = add_options_page(
 			__( 'Etsy Rhythm Options', $this->plugin_slug ),
-			__( 'Settings', $this->plugin_slug ),
+			__( 'Etsy Rhythm Settings', $this->plugin_slug ),
 			'manage_options',
 			$this->plugin_slug,
 			array( $this, 'render_form' )
@@ -191,6 +202,7 @@ class Etsy_Rhythm_Admin {
 
 	}
 
+	
 	
 	/**
 	 * Add settings action link to the plugins page.
@@ -208,6 +220,8 @@ class Etsy_Rhythm_Admin {
 
 	}
 
+
+
 	
 	/**
 	* Render the options page
@@ -219,24 +233,33 @@ class Etsy_Rhythm_Admin {
 	}
 
 
+
+
 	/**
 	* Sanitize and validate input
 	*
 	* @since	1.0.0
 	* 
-	* @param 	array		
+	* @param 	array		$input		The array of settings
 	*
-	* @return	array
+	* @return	array		$input		The sanitized array of settings
 	*/
 	public function validate_options($input) {
-		$input['api_key'] 		= 	wp_filter_nohtml_kses( preg_replace( '/[^a-z0-9]/', '', $input['api_key'] ) );
-		$input['target_blank'] 	= 	wp_filter_nohtml_kses( $input['target_blank'] ); 
-		$input['quantity'] 		= 	wp_filter_nohtml_kses( absint($input['quantity'] ) );
-		$input['cache_life'] 	= 	wp_filter_nohtml_kses( absint($input['cache_life'] ) );
-		$input['reset_cache'] 	= 	wp_filter_nohtml_kses( $input['reset_cache'] );
-		$input['title_length'] 	= 	wp_filter_nohtml_kses( absint($input['title_length'] ) );
-		$input['language'] 		= 	wp_filter_nohtml_kses( $input['language'] );
-		$input['image_size'] 	= 	wp_filter_nohtml_kses( $input['image_size'] );
+		$input['api_key'] 				= 	wp_filter_nohtml_kses( trim(preg_replace( '/[^a-z0-9]/', '', $input['api_key'] ) ) );
+		$input['target_blank'] 			= 	wp_filter_nohtml_kses( $input['target_blank'] ); 
+		$input['display_quantity']		= 	wp_filter_nohtml_kses( (empty( $input['display_quantity'] )) ? $input['display_quantity'] = "1" : absint( $input['display_quantity'] ) );
+		$input['cache_life'] 			= 	wp_filter_nohtml_kses( absint($input['cache_life'] ) );
+		$input['reset_cache'] 			= 	wp_filter_nohtml_kses( $input['reset_cache'] );
+		$input['title_length'] 			= 	wp_filter_nohtml_kses( absint($input['title_length'] ) );
+		$input['language'] 				= 	wp_filter_nohtml_kses( $input['language'] );
+		$input['user_rows'] 			= 	wp_filter_nohtml_kses( $input['user_rows'] );
+		$input['materials'] 			= 	wp_filter_nohtml_kses( $input['materials'] );
+		$input['who_made'] 				= 	wp_filter_nohtml_kses( $input['who_made'] );
+		$input['when_made'] 			= 	wp_filter_nohtml_kses( $input['when_made'] );
+		$input['image_size'] 			= 	wp_filter_nohtml_kses( $input['image_size'] );
+		
+		Etsy_Rhythm::delete_temp_files();
+		
 		return $input;
 	}
 
