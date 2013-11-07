@@ -15,7 +15,7 @@ TODO List
 - Allow user to specify image sizes
 - Integrate Lightbox if installed
 - Implement jQuery to validate API Key on settings page
-- Create item object to allow for more robust and flexible data
+- Create item object to modularize and prepare for future expansion
 - Options to display shop name, shop sections, and other shop data
 
 Known Bugs
