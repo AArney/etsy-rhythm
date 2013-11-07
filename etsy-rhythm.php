@@ -18,7 +18,7 @@
  * Plugin Name:       Etsy Rhythm
  * Plugin URI:        https://github.com/AArney/etsy-rhythm
  * Description:       A plug-in that retrieves and displays shop listings from Etsy
- * Version:           1.0.2
+ * Version:           1.0.4
  * Author:            Aaron Arney
  * Author URI:        https://github.com/AArney
  * Text Domain:       etsy-rhtyhm-locale
