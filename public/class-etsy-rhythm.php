@@ -157,7 +157,7 @@ class Etsy_Rhythm {
 			$atts ) );
 			
 		// Pass the attributes to the postListing function and render the items
-		return self::postListings( $shop_id, $shop_section, $quantity );
+		return self::postListings( $shop_id, $shop_section , $quantity );
 	}
 	
 	

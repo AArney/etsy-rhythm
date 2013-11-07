@@ -20,8 +20,20 @@
 
 /* API Key OK */
 .green {
+	border: 2px solid green;
 }
 
 /* API Key Bad */
 .red {
+	border: 2px solid red;
+}
+
+
+.left {
+	width: 50%;
+	float: left;
+}
+.right {
+	width: 50%;
+	float: right;
 }

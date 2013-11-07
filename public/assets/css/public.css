@@ -1,6 +1,9 @@
 
 /* Table that holds all the items */
 .etsy-shop-listing-table {
+	/* Center the table */
+	margin: 0 auto;
+	width: auto;
 }
 
 /* Table Row that holds items */
