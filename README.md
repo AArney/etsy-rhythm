@@ -14,7 +14,10 @@ TODO List
 - Give full control over appearence
 - Allow user to specify image sizes
 - Integrate Lightbox if installed
-
+- Implement jQuery to validate API Key on settings page
+- Create item object to allow for more robust and flexible data
+- Options to display shop name, shop sections, and other shop data
 
 Known Bugs
 - If the user does not specify a shop section in the shortcode, the plug-in will throw an invalid argument error
+- Language selection does not work properly
