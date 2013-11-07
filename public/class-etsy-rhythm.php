@@ -319,7 +319,7 @@ class Etsy_Rhythm {
 		
 		// if the Shop Item is active
 		if ( $state == 'active' ) {
-			$state = __( 'Available', 'etsyshoprhythm' );
+			$state = __( 'Available', 'etsyrhythm' );
 			
 			$script_tags =  '
 				<div class="etsy-item-container" id="' . $listing_id . '">

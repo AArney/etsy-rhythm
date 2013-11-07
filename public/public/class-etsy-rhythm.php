@@ -151,8 +151,8 @@ class Etsy_Rhythm {
 		
 		// Extract the attributes
 		extract( shortcode_atts( array(
-			'shop_id'		=>	'',
-			'shop_section'	=>	'',
+			'shop_id'		=>	'0',
+			'shop_section'	=>	'0',
 			'quantity'		=>	'25' ), 
 			$atts ) );
 			
@@ -176,7 +176,7 @@ class Etsy_Rhythm {
 	*/
 	public function postListings( $shop_id, $shop_section, $quantity) {    
 		
-		// Grab listings with shortcode atts as arguments
+		// Grab listings with shortcode atts as arguments	
 		$listings = $this->getActiveListings( $shop_id, $shop_section, $quantity );
 
 		// If grabbing listings was successful
@@ -273,8 +273,13 @@ class Etsy_Rhythm {
 			// This will check for an existing file, or if the cache file is older than the user set cache life
 			if (!file_exists( $etsy_cache_file ) or ( time() - filemtime( $etsy_cache_file ) >= $cache_life ) ) {
 				
+				
 				// This is the all important query string
-				$response = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
+				if ( $shop_section === '0' ) {
+					$response = $this->api_request( "shops/$shop_id//listings/active", "&limit=$quantity&includes=Images" );
+				} else {
+					$response = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
+				}
 				
 				if ( !is_wp_error( $response ) ) {
 					// if request OK
@@ -327,13 +332,13 @@ class Etsy_Rhythm {
 	
 		// Trim Title length based on user preference
 		if ( strlen( $title ) > $title_length ) {
-			$title = substr( $title, 0, $tile_length );
+			$title = substr( $title, 0, $title_length );
 			$title .= "...";
 		}
 		
 		// if the Shop Item is active
 		if ( $state == 'active' ) {
-			$state = __( 'Available', 'etsyshoprhythm' );
+			$state = __( 'Available', 'etsyrhythm' );
 			
 			$script_tags =  '
 				<div class="etsy-item-container" id="' . $listing_id . '">
@@ -661,7 +666,7 @@ class Etsy_Rhythm {
 	public static function logError( $error, $logfile='' ) {
 		
 		if ( $logfile == '' ) {
-			if ( defined( DEFAULT_LOG ) == TRUE ) {
+			if ( defined( DEFAULT_LOG ) == true ) {
 				$logfile = DEFAULT_LOG;
 			} else {
 				$logfile = plugins_url('logs/error_log.txt');
