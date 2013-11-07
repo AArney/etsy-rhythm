@@ -52,15 +52,7 @@ class Etsy_Rhythm {
 	protected static $instance = null;
 
 	
-	/**
-	* Define logfile name
-	*
-	* @since 	1.0.1
-	*/
-	const DEFAULT_LOG = 'logs/error_log.txt';
-	
-	
-	
+
 	/**
 	 * Initialize the plugin by setting localization and loading public scripts
 	 * and styles.
@@ -84,7 +76,7 @@ class Etsy_Rhythm {
 		 */
 		add_shortcode( 'etsy-rhythm', array( $this, 'shortcode' ) );
 		
-
+		
 	}
 
 	
@@ -96,7 +88,7 @@ class Etsy_Rhythm {
 	* @return 	string			$data		Request body
 	*/
 	public function testAPIKey() {
-		$response = self::api_request( 'listings/active', '&limit=1&offset=0', 1 );
+		$response = self::api_request( 'listings/active', '&limit=1&offset=0');
 		$data = json_decode( $response );
 		return $data;
 	}
@@ -133,7 +125,7 @@ class Etsy_Rhythm {
 			return $request['body'];
 			
 		} else {
-			$this->logError( $request );
+			self::logError( $request );
 			exit;
 		}
 	}
@@ -290,10 +282,11 @@ class Etsy_Rhythm {
 				if ( !is_wp_error( $response ) ) {
 					// If request OK
 					$tmp_file = $etsy_cache_file.rand().'.tmp';
-					file_put_contents( $tmp_file, $response );
+					file_put_contents( $tmp_file, $response, LOCK_EX );
 					rename( $tmp_file, $etsy_cache_file );
 				} else {
 					// return WP_Error
+					self::logError( $response );
 					return $response;
 				}
 			} else {
@@ -411,11 +404,12 @@ class Etsy_Rhythm {
 	* @return	string		$data			Returns the request body
 	*/
 	public function getShopSection( $shop_id, $shop_section) {
-		$response = self::api_request( "shops/$shop_id/sections/$shop_section", NULL , 1 );
+		$response = self::api_request( "shops/$shop_id/sections/$shop_section", NULL );
 		if ( !is_wp_error( $response ) ) {
 			$data = json_decode( $response );
 		} else {
 			// return WP_Error
+			self::logError( $response );
 			return $response;
 		}
 		
@@ -626,7 +620,7 @@ class Etsy_Rhythm {
 				}
 			}
 		} catch (Exception $e ) {
-			// No files to be deleted
+			self::logError( $e );
 		}
 	}
 	
@@ -659,7 +653,7 @@ class Etsy_Rhythm {
 				}
 			}
 		} catch (Exception $e ) {
-			// No files to be deleted
+			self::logError( $e );
 		}
 	}
 	
@@ -683,16 +677,12 @@ class Etsy_Rhythm {
 	* @since 	1.0.1
 	*
 	* @param	String		Body of error message
-	* @param	optional string	
+	* @param	optional 	
 	*/
-	public static function logError( $error, $logfile='' ) {
+	public function logError( $error, $logfile='' ) {
 		
 		if ( $logfile == '' ) {
-			if ( defined( DEFAULT_LOG ) == true ) {
-				$logfile = DEFAULT_LOG;
-			} else {
-				$logfile = plugins_url('logs/error_log.txt');
-			}
+			$logfile = dirname( __FILE__ ) . '/logs/error_log.txt';
 		}
 		
 		// Get time of error
@@ -703,23 +693,11 @@ class Etsy_Rhythm {
 		// Format day time
 		$date = date('Y-m-d H:i:s', $time);
 		
+		$errorMessage = $date . ' -- ' . $error . PHP_EOL;
+		
 		// Append to log file
-		if ( $fd = @fopen( $logfile, "a" ) ) {
-			$result = fputcsv( $fd, array( $date, $message ) );
-			fclose( $fd );
-			
-			if ( $result > 0 ) {
-				return array( status => true );
-			} else {
-				return array( 	status	=> 	false,
-								message	=>	"Unable to write to $logfile."
-							);
-			}
-		} else {
-			return array(	status	=>	false,
-							message	=> "Unable to open log $logfile."
-						);
-		}
+		file_put_contents( $logfile, $errorMessage , FILE_APPEND | LOCK_EX );
+		
 	}
 
 }
