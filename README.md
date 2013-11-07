@@ -21,3 +21,4 @@ TODO List
 Known Bugs
 - If the user does not specify a shop section in the shortcode, the plug-in will throw an invalid argument error
 - Language selection does not work properly
+- Ironically, the logfile is not functioning 
