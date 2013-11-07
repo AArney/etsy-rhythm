@@ -17,6 +17,7 @@ TODO List
 - Implement jQuery to validate API Key on settings page
 - Create item object to modularize and prepare for future expansion
 - Options to display shop name, shop sections, and other shop data
+- Add pagination to results
 
 Known Bugs
 - If the user does not specify a shop section in the shortcode, the plug-in will throw an invalid argument error
