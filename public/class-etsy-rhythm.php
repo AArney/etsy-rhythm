@@ -24,7 +24,7 @@ class Etsy_Rhythm {
 	 *
 	 * @var     string
 	 */
-	const VERSION = '1.0.3';
+	const VERSION = '1.0.4';
 
 	/**
 	 * TODO - Rename "plugin-name" to the name your your plugin
