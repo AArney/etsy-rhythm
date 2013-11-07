@@ -248,11 +248,11 @@ class Etsy_Rhythm_Admin {
 		$input['api_key'] 				= 	wp_filter_nohtml_kses( trim(preg_replace( '/[^a-z0-9]/', '', $input['api_key'] ) ) );
 		$input['target_blank'] 			= 	wp_filter_nohtml_kses( $input['target_blank'] ); 
 		$input['display_quantity']		= 	wp_filter_nohtml_kses( (empty( $input['display_quantity'] )) ? $input['display_quantity'] = "1" : absint( $input['display_quantity'] ) );
-		$input['cache_life'] 			= 	wp_filter_nohtml_kses( absint($input['cache_life'] ) );
+		$input['cache_life'] 			= 	wp_filter_nohtml_kses( (empty( $input['cache_life'] )) ? $input['cache_life'] = "26000" : absint( $input['cache_life'] ) );
 		$input['reset_cache'] 			= 	wp_filter_nohtml_kses( $input['reset_cache'] );
-		$input['title_length'] 			= 	wp_filter_nohtml_kses( absint($input['title_length'] ) );
+		$input['title_length'] 			= 	wp_filter_nohtml_kses( (empty( $input['title_length'] )) ? $input['title_length'] = "25" : absint( $input['title_length'] ) );
 		$input['language'] 				= 	wp_filter_nohtml_kses( $input['language'] );
-		$input['user_rows'] 			= 	wp_filter_nohtml_kses( $input['user_rows'] );
+		$input['user_rows'] 			= 	wp_filter_nohtml_kses( (empty( $input['user_rows'] )) ? $input['user_rows'] = "4" : absint( $input['user_rows'] ) );
 		$input['materials'] 			= 	wp_filter_nohtml_kses( $input['materials'] );
 		$input['who_made'] 				= 	wp_filter_nohtml_kses( $input['who_made'] );
 		$input['when_made'] 			= 	wp_filter_nohtml_kses( $input['when_made'] );
