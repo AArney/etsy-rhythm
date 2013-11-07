@@ -125,7 +125,7 @@ class Etsy_Rhythm {
 			return $request['body'];
 			
 		} else {
-			self::logError( $request );
+			$this->logError( $request );
 			exit;
 		}
 	}
@@ -149,7 +149,7 @@ class Etsy_Rhythm {
 			$atts ) );
 			
 		// Pass the attributes to the postListing function and render the items
-		return self::postListings( $shop_id, $shop_section , $quantity );
+		return $this->postListings( $shop_id, $shop_section , $quantity );
 	}
 	
 	
@@ -231,7 +231,7 @@ class Etsy_Rhythm {
 						  
 		} else {
 			// If Error occured while retrieving listings
-			self::logError( $listings );
+			$this->logError( $listings );
 		}
 	
 		// Return array imploded into single string, delimited by newlines
@@ -252,7 +252,7 @@ class Etsy_Rhythm {
 	public function getActiveListings( $shop_id, $shop_section, $quantity) {
 		
 		// I am going to call the cycle_temp_files function here for the time being
-		self::cycle_temp_files();
+		$this->cycle_temp_files();
 		
 		// Let's grab the number of items to return, by default it will return 25
 		$options = Etsy_Rhythm_Admin::getOptions();
@@ -272,9 +272,9 @@ class Etsy_Rhythm {
 				// This is the all important query string
 				// If shop section is not supplied in the shortcode, let's just return all active listings in the shop
 				if ( $shop_section === '0' ) {
-					$response = self::api_request( "shops/$shop_id//listings/active", "&limit=$quantity&includes=Images" );
+					$response = $this->api_request( "shops/$shop_id//listings/active", "&limit=$quantity&includes=Images" );
 				} else {
-					$response = self::api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
+					$response = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
 				}
 				
 				
@@ -286,7 +286,7 @@ class Etsy_Rhythm {
 					rename( $tmp_file, $etsy_cache_file );
 				} else {
 					// return WP_Error
-					self::logError( $response );
+					$this->logError( $response );
 					return $response;
 				}
 			} else {
@@ -404,12 +404,12 @@ class Etsy_Rhythm {
 	* @return	string		$data			Returns the request body
 	*/
 	public function getShopSection( $shop_id, $shop_section) {
-		$response = self::api_request( "shops/$shop_id/sections/$shop_section", NULL );
+		$response = $this->api_request( "shops/$shop_id/sections/$shop_section", NULL );
 		if ( !is_wp_error( $response ) ) {
 			$data = json_decode( $response );
 		} else {
 			// return WP_Error
-			self::logError( $response );
+			$this->logError( $response );
 			return $response;
 		}
 		
@@ -451,123 +451,6 @@ class Etsy_Rhythm {
 
 
 
-	/**
-	 * Fired when the plugin is activated.
-	 *
-	 * @since    1.0.0
-	 *
-	 * @param    boolean    $network_wide    True if WPMU superadmin uses
-	 *                                       "Network Activate" action, false if
-	 *                                       WPMU is disabled or plugin is
-	 *                                       activated on an individual blog.
-	 */
-	public static function activate( $network_wide ) {
-
-		if ( function_exists( 'is_multisite' ) && is_multisite() ) {
-
-			if ( $network_wide  ) {
-
-				// Get all blog ids
-				$blog_ids = self::get_blog_ids();
-
-				foreach ( $blog_ids as $blog_id ) {
-
-					switch_to_blog( $blog_id );
-					self::single_activate();
-				}
-
-				restore_current_blog();
-
-			} else {
-				self::single_activate();
-			}
-
-		} else {
-			self::single_activate();
-		}
-
-	}
-
-	/**
-	 * Fired when the plugin is deactivated.
-	 *
-	 * @since    1.0.0
-	 *
-	 * @param    boolean    $network_wide    True if WPMU superadmin uses
-	 *                                       "Network Deactivate" action, false if
-	 *                                       WPMU is disabled or plugin is
-	 *                                       deactivated on an individual blog.
-	 */
-	public static function deactivate( $network_wide ) {
-
-		if ( function_exists( 'is_multisite' ) && is_multisite() ) {
-
-			if ( $network_wide ) {
-
-				// Get all blog ids
-				$blog_ids = self::get_blog_ids();
-
-				foreach ( $blog_ids as $blog_id ) {
-
-					switch_to_blog( $blog_id );
-					self::single_deactivate();
-
-				}
-
-				restore_current_blog();
-
-			} else {
-				self::single_deactivate();
-			}
-
-		} else {
-			self::single_deactivate();
-		}
-
-	}
-
-	/**
-	 * Fired when a new site is activated with a WPMU environment.
-	 *
-	 * @since    1.0.0
-	 *
-	 * @param    int    $blog_id    ID of the new blog.
-	 */
-	public function activate_new_site( $blog_id ) {
-
-		if ( 1 !== did_action( 'wpmu_new_blog' ) ) {
-			return;
-		}
-
-		switch_to_blog( $blog_id );
-		self::single_activate();
-		restore_current_blog();
-	}
-	
-	
-
-	/**
-	 * Get all blog ids of blogs in the current network that are:
-	 * - not archived
-	 * - not spam
-	 * - not deleted
-	 *
-	 * @since    1.0.0
-	 *
-	 * @return   array|false    The blog ids, false if no matches.
-	 */
-	private static function get_blog_ids() {
-
-		global $wpdb;
-
-		// get an array of blog ids
-		$sql = "SELECT blog_id FROM $wpdb->blogs
-			WHERE archived = '0' AND spam = '0'
-			AND deleted = '0'";
-
-		return $wpdb->get_col( $sql );
-
-	}
 
 
 	/**
@@ -620,7 +503,7 @@ class Etsy_Rhythm {
 				}
 			}
 		} catch (Exception $e ) {
-			self::logError( $e );
+			$this->logError( $e );
 		}
 	}
 	
@@ -653,7 +536,7 @@ class Etsy_Rhythm {
 				}
 			}
 		} catch (Exception $e ) {
-			self::logError( $e );
+			$this->logError( $e );
 		}
 	}
 	
