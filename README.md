@@ -18,6 +18,9 @@ TODO List
 - Create item object to modularize and prepare for future expansion
 - Options to display shop name, shop sections, and other shop data
 - Add pagination to results
+- CSS styling as form options, store in theme folder or preserve settings through upgrade/deletion
+- Add widget support
+
 
 Known Bugs
 - If the user does not specify a shop section in the shortcode, the plug-in will throw an invalid argument error
