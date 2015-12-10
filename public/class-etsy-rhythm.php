@@ -272,7 +272,7 @@ class Etsy_Rhythm {
 				// This is the all important query string
 				// If shop section is not supplied in the shortcode, let's just return all active listings in the shop
 				if ( $shop_section === '0' ) {
-					$response = $this->api_request( "shops/$shop_id//listings/active", "&limit=$quantity&includes=Images" );
+					$response = $this->api_request( "shops/$shop_id/active", "&limit=$quantity&includes=Images" );
 				} else {
 					$response = $this->api_request( "shops/$shop_id/sections/$shop_section/listings/active", "&limit=$quantity&includes=Images" );
 				}
